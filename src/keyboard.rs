@@ -14,12 +14,11 @@ impl Keyboard {
         let hidapi = HidApi::new()?;
         for device in hidapi.device_list() {
             if device.vendor_id() == consts::VENDOR_ID
+                && let Some(name) = consts::PRODUCT_ID.get(&device.product_id())
                 && device.interface_number() == consts::INTERFACE_ID
             {
-                if let Some(name) = consts::PRODUCT_ID.get(&device.product_id()) {
-                    let device = device.open_device(&hidapi)?;
-                    return Ok(Keyboard { name, device });
-                }
+                let device = device.open_device(&hidapi)?;
+                return Ok(Keyboard { name, device });
             }
         }
         Err(anyhow::anyhow!("no mactching device found"))
