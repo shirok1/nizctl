@@ -1,43 +1,28 @@
-use clap::Clap;
+use clap::Parser;
 use dialog::DialogBox;
 use nizctl::{config, keyboard};
 use std::io::Read;
 
-#[derive(Clap, Debug)]
-#[clap(name = "nizctl")]
+#[derive(clap::Parser, Debug)]
+#[command(name = "nizctl")]
 struct Nizctl {
-    #[clap(subcommand)]
-    sub: SubCommand,
+    #[command(subcommand)]
+    command: Commands,
 }
 
-#[derive(Clap, Debug)]
-enum SubCommand {
-    Pull(Pull),
-    Push(Push),
-    Lock(Lock),
-    Unlock(Unlock),
-    Calib(Calib),
+#[derive(clap::Subcommand, Debug)]
+enum Commands {
+    Pull,
+    Push,
+    Lock,
+    Unlock,
+    Calib,
 }
-
-#[derive(Clap, Debug)]
-struct Pull {}
-
-#[derive(Clap, Debug)]
-struct Push {}
-
-#[derive(Clap, Debug)]
-struct Lock {}
-
-#[derive(Clap, Debug)]
-struct Unlock {}
-
-#[derive(Clap, Debug)]
-struct Calib {}
 
 fn main() {
     let opts: Nizctl = Nizctl::parse();
-    match opts.sub {
-        SubCommand::Pull(_) => {
+    match opts.command {
+        Commands::Pull => {
             let kbd = keyboard::Keyboard::open().unwrap();
             println!(
                 "{}",
@@ -46,7 +31,7 @@ fn main() {
                     .unwrap()
             );
         }
-        SubCommand::Push(_) => {
+        Commands::Push => {
             let mut buffer = String::new();
             std::io::stdin().read_to_string(&mut buffer).unwrap();
             keyboard::Keyboard::open()
@@ -56,16 +41,16 @@ fn main() {
                 ))
                 .unwrap()
         }
-        SubCommand::Lock(_) => {
+        Commands::Lock => {
             if dialog::Question::new("do you really want to lock your keyboard, you will need another keyboard to unlock").title("Warning").show().unwrap() == dialog::Choice::Yes
             {
                 keyboard::Keyboard::open().unwrap().keylock().unwrap();
             }
         }
-        SubCommand::Unlock(_) => {
+        Commands::Unlock => {
             keyboard::Keyboard::open().unwrap().keyunlock().unwrap();
         }
-        SubCommand::Calib(_) => {
+        Commands::Calib => {
             let ans = dialog::Question::new("Before starting the calibration process, make sure that all the keys are released, if you are seeing this message in your terminal, either install zenity or kdialog, or use another keyboard during the process.").title("Reminder").show().unwrap();
             if ans != dialog::Choice::Yes {
                 return;
