@@ -1,7 +1,7 @@
 use clap::Parser;
 use dialog::DialogBox;
 use nizctl::{config, keyboard};
-use std::io::Read;
+use std::io::{stdin, stdout};
 
 #[derive(clap::Parser, Debug)]
 #[command(name = "nizctl")]
@@ -24,22 +24,15 @@ fn main() {
     match opts.command {
         Commands::Pull => {
             let kbd = keyboard::Keyboard::open().unwrap();
-            println!(
-                "{}",
-                config::Keymap::new(format!("niz/{}", kbd.name), kbd.read_keymap().unwrap())
-                    .encode()
-                    .unwrap()
-            );
+            let keymap_raw = kbd.read_keymap().unwrap();
+            let keymap = config::Keymap::new(format!("niz/{}", kbd.name), keymap_raw);
+            serde_json::to_writer(stdout(), &keymap).unwrap();
         }
         Commands::Push => {
-            let mut buffer = String::new();
-            std::io::stdin().read_to_string(&mut buffer).unwrap();
-            keyboard::Keyboard::open()
-                .unwrap()
-                .write_keymap(config::keymap_from_layers(
-                    config::Keymap::decode(&buffer).unwrap().layers,
-                ))
-                .unwrap()
+            let keymap: config::Keymap = serde_json::from_reader(stdin()).unwrap();
+            let keymap_raw = config::keymap_from_layers(keymap.layers);
+            let kbd = keyboard::Keyboard::open().unwrap();
+            kbd.write_keymap(keymap_raw).unwrap()
         }
         Commands::Lock => {
             if dialog::Question::new("do you really want to lock your keyboard, you will need another keyboard to unlock").title("Warning").show().unwrap() == dialog::Choice::Yes

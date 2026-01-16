@@ -21,12 +21,6 @@ impl Keymap {
             layers: layers_from_keymap(keymap),
         }
     }
-    pub fn encode(&self) -> serde_json::Result<String> {
-        serde_json::to_string(self)
-    }
-    pub fn decode(keymap: &str) -> serde_json::Result<Self> {
-        serde_json::from_str(keymap)
-    }
 }
 
 pub fn layers_from_keymap(keymap: Vec<Vec<u8>>) -> Vec<Vec<String>> {
