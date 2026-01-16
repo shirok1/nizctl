@@ -9,7 +9,7 @@ strip = true
 
 [dependencies]
 anyhow = "1.0.42"
-hidapi = "1.2.6"
+hidapi = "2.6.4"
 packed_struct = { version = "0.6", features = [ "byte_types_64" ] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
