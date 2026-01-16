@@ -1,15 +1,13 @@
-use std::collections::HashMap;
+use std::{cell::LazyCell, collections::HashMap};
 
-pub const VENDOR_ID: u16 = 0x0483;
+pub const VENDOR_ID: u16 = 0x0483; // STMicroelectronics
+pub const PRODUCT_ID: LazyCell<HashMap<u16, &'static str>> = LazyCell::new(|| {
+    let mut map = HashMap::new();
+    map.insert(0x512a, "atom66");
+    map.insert(0x5129, "micro84");
+    map
+});
 pub const INTERFACE_ID: i32 = 1;
-lazy_static::lazy_static! {
-    pub static ref PRODUCT_ID: HashMap<u16, &'static str> = {
-        let mut map = HashMap::new();
-        map.insert(0x512a, "atom66");
-        map.insert(0x5129, "micro84");
-        map
-    };
-}
 
 #[repr(u16)]
 pub enum OpCode {
